@@ -81,6 +81,9 @@
             <button onclick="switchTab('experiment')" id="btn-experiment" class="py-3 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium text-xs sm:text-sm transition flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap">
                 <i class="fa-solid fa-clipboard-list"></i> <span>บันทึกผลการทดลอง</span>
             </button>
+            <button onclick="switchTab('colorcode')" id="btn-colorcode" class="py-3 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium text-xs sm:text-sm transition flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap">
+                <i class="fa-solid fa-palette"></i> <span>อ่านค่าสีตัวต้านทาน</span>
+            </button>
             <button onclick="switchTab('theory')" id="btn-theory" class="py-3 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium text-xs sm:text-sm transition flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap">
                 <i class="fa-solid fa-book-open"></i> <span>ทฤษฎีและสูตร</span>
             </button>
@@ -311,7 +314,107 @@
             </div>
         </section>
 
-        <!-- TAB 4: THEORY & FORMULAS -->
+        <!-- TAB 4: COLOR CODE READER -->
+        <section id="tab-colorcode" class="hidden space-y-4 sm:space-y-6">
+            <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+                <div>
+                    <h2 class="text-base sm:text-lg font-bold text-slate-900 flex items-center space-x-2">
+                        <i class="fa-solid fa-palette text-indigo-600"></i>
+                        <span>เครื่องมืออ่านค่าแถบสีตัวต้านทาน 4 แถบ (Resistor Color Code Calculator)</span>
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-500">เลือกสีแถบที่ 1 แถบที่ 2 ตัวคูณ และค่าความคลาดเคลื่อน เพื่อคำนวณหาค่าความต้านทาน</p>
+                </div>
+
+                <!-- Resistor Graphic Preview -->
+                <div class="bg-slate-900 p-6 sm:p-10 rounded-2xl flex flex-col items-center justify-center space-y-6 relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                    <div class="text-center z-10">
+                        <span class="text-xs text-indigo-300 uppercase tracking-widest font-semibold block mb-1">ค่าความต้านทานที่คำนวณได้</span>
+                        <h3 id="resistor-result-display" class="text-2xl sm:text-4xl font-extrabold text-white font-mono">100 ohm ±5%</h3>
+                    </div>
+
+                    <!-- Visual Resistor SVG / CSS Body -->
+                    <div class="w-72 sm:w-96 h-20 bg-amber-100 rounded-full border-4 border-amber-800 shadow-2xl relative flex items-center justify-between px-12 z-10">
+                        <!-- Leads -->
+                        <div class="absolute -left-12 w-12 h-2 bg-slate-400 -z-10"></div>
+                        <div class="absolute -right-12 w-12 h-2 bg-slate-400 -z-10"></div>
+
+                        <!-- Bands -->
+                        <div id="band1-preview" class="w-4 h-full bg-black transition-colors duration-300 shadow"></div>
+                        <div id="band2-preview" class="w-4 h-full bg-brown transition-colors duration-300 shadow"></div>
+                        <div id="band3-preview" class="w-4 h-full bg-red transition-colors duration-300 shadow"></div>
+                        <div class="w-4 h-full bg-transparent"></div>
+                        <div id="band4-preview" class="w-4 h-full bg-gold transition-colors duration-300 shadow"></div>
+                    </div>
+                </div>
+
+                <!-- Selectors Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Band 1 -->
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+                        <label class="block text-xs font-bold text-slate-700">แถบสีที่ 1 (Digit 1)</label>
+                        <select id="select-band1" onchange="updateResistorColorCode()" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="0" style="background:#000; color:#fff;">ดำ (Black) - 0</option>
+                            <option value="1" style="background:#8B4513; color:#fff;" selected>น้ำตาล (Brown) - 1</option>
+                            <option value="2" style="background:#FF0000; color:#fff;">แดง (Red) - 2</option>
+                            <option value="3" style="background:#FFA500;">ส้ม (Orange) - 3</option>
+                            <option value="4" style="background:#FFFF00;">เหลือง (Yellow) - 4</option>
+                            <option value="5" style="background:#008000; color:#fff;">เขียว (Green) - 5</option>
+                            <option value="6" style="background:#0000FF; color:#fff;">น้ำเงิน (Blue) - 6</option>
+                            <option value="7" style="background:#EE82EE;">ม่วง (Violet) - 7</option>
+                            <option value="8" style="background:#808080; color:#fff;">เทา (Gray) - 8</option>
+                            <option value="9" style="background:#FFFFFF;">ขาว (White) - 9</option>
+                        </select>
+                    </div>
+
+                    <!-- Band 2 -->
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+                        <label class="block text-xs font-bold text-slate-700">แถบสีที่ 2 (Digit 2)</label>
+                        <select id="select-band2" onchange="updateResistorColorCode()" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="0" style="background:#000; color:#fff;">ดำ (Black) - 0</option>
+                            <option value="1" style="background:#8B4513; color:#fff;">น้ำตาล (Brown) - 1</option>
+                            <option value="2" style="background:#FF0000; color:#fff;" selected>แดง (Red) - 2</option>
+                            <option value="3" style="background:#FFA500;">ส้ม (Orange) - 3</option>
+                            <option value="4" style="background:#FFFF00;">เหลือง (Yellow) - 4</option>
+                            <option value="5" style="background:#008000; color:#fff;">เขียว (Green) - 5</option>
+                            <option value="6" style="background:#0000FF; color:#fff;">น้ำเงิน (Blue) - 6</option>
+                            <option value="7" style="background:#EE82EE;">ม่วง (Violet) - 7</option>
+                            <option value="8" style="background:#808080; color:#fff;">เทา (Gray) - 8</option>
+                            <option value="9" style="background:#FFFFFF;">ขาว (White) - 9</option>
+                        </select>
+                    </div>
+
+                    <!-- Band 3 (Multiplier) -->
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+                        <label class="block text-xs font-bold text-slate-700">แถบสีที่ 3 (Multiplier)</label>
+                        <select id="select-band3" onchange="updateResistorColorCode()" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="1" style="background:#000; color:#fff;">ดำ (Black) x1</option>
+                            <option value="10" style="background:#8B4513; color:#fff;" selected>น้ำตาล (Brown) x10</option>
+                            <option value="100" style="background:#FF0000; color:#fff;">แดง (Red) x100</option>
+                            <option value="1000" style="background:#FFA500;">ส้ม (Orange) x1k</option>
+                            <option value="10000" style="background:#FFFF00;">เหลือง (Yellow) x10k</option>
+                            <option value="100000" style="background:#008000; color:#fff;">เขียว (Green) x100k</option>
+                            <option value="1000000" style="background:#0000FF; color:#fff;">น้ำเงิน (Blue) x1M</option>
+                            <option value="0.1" style="background:#FFD700;">ทอง (Gold) x0.1</option>
+                            <option value="0.01" style="background:#C0C0C0;">เงิน (Silver) x0.01</option>
+                        </select>
+                    </div>
+
+                    <!-- Band 4 (Tolerance) -->
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+                        <label class="block text-xs font-bold text-slate-700">แถบสีที่ 4 (Tolerance)</label>
+                        <select id="select-band4" onchange="updateResistorColorCode()" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="1" style="background:#8B4513; color:#fff;">น้ำตาล (Brown) ±1%</option>
+                            <option value="2" style="background:#FF0000; color:#fff;">แดง (Red) ±2%</option>
+                            <option value="5" style="background:#FFD700;" selected>ทอง (Gold) ±5%</option>
+                            <option value="10" style="background:#C0C0C0;">เงิน (Silver) ±10%</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: THEORY & FORMULAS -->
         <section id="tab-theory" class="hidden space-y-4 sm:space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <!-- Series Theory -->
@@ -440,6 +543,46 @@
         let experimentLogs = [];
         let circuitChartInstance = null;
 
+        const colorMap = {
+            '0': '#000000',
+            '1': '#8B4513',
+            '2': '#FF0000',
+            '3': '#FFA500',
+            '4': '#FFFF00',
+            '5': '#008000',
+            '6': '#0000FF',
+            '7': '#EE82EE',
+            '8': '#808080',
+            '9': '#FFFFFF',
+            '10': '#FFD700', // Gold multiplier
+            '0.1': '#FFD700',
+            '0.01': '#C0C0C0'
+        };
+
+        function updateResistorColorCode() {
+            const b1 = document.getElementById('select-band1').value;
+            const b2 = document.getElementById('select-band2').value;
+            const b3 = document.getElementById('select-band3').value;
+            const b4 = document.getElementById('select-band4').value;
+
+            document.getElementById('band1-preview').style.backgroundColor = colorMap[b1] || '#000';
+            document.getElementById('band2-preview').style.backgroundColor = colorMap[b2] || '#000';
+            document.getElementById('band3-preview').style.backgroundColor = colorMap[b3] || '#000';
+            document.getElementById('band4-preview').style.backgroundColor = b4 === '5' ? '#FFD700' : b4 === '10' ? '#C0C0C0' : '#8B4513';
+
+            const rawVal = (parseInt(b1) * 10 + parseInt(b2)) * parseFloat(b3);
+            let formattedVal = '';
+            if (rawVal >= 1000000) {
+                formattedVal = (rawVal / 1000000).toFixed(rawVal % 1000000 !== 0 ? 1 : 0) + ' M';
+            } else if (rawVal >= 1000) {
+                formattedVal = (rawVal / 1000).toFixed(rawVal % 1000 !== 0 ? 1 : 0) + ' k';
+            } else {
+                formattedVal = rawVal.toString();
+            }
+
+            document.getElementById('resistor-result-display').innerText = `${formattedVal} ohm ±${b4}%`;
+        }
+
         function showToast(message) {
             const toast = document.getElementById('custom-toast');
             document.getElementById('toast-message').innerText = message;
@@ -450,7 +593,7 @@
         }
 
         function switchTab(tabId) {
-            const tabs = ['simulator', 'calculator', 'experiment', 'theory'];
+            const tabs = ['simulator', 'calculator', 'experiment', 'colorcode', 'theory'];
             tabs.forEach(t => {
                 document.getElementById(`tab-${t}`).classList.add('hidden');
                 document.getElementById(`btn-${t}`).classList.remove('tab-active', 'border-indigo-600', 'text-indigo-600');
@@ -462,6 +605,8 @@
 
             if(tabId === 'calculator') {
                 updateCalculator();
+            } else if(tabId === 'colorcode') {
+                updateResistorColorCode();
             }
         }
 
@@ -672,6 +817,7 @@
 
         window.onload = function() {
             updateCalculator();
+            updateResistorColorCode();
         };
     </script>
 </body>
