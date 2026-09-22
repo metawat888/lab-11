@@ -1,394 +1,678 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resistor Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dashboard การทดลองวงจรไฟฟ้าตัวต้านทาน</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Inter Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        @keyframes flow {
-            from { stroke-dashoffset: 24; }
-            to { stroke-dashoffset: 0; }
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for real-time visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- html2pdf.js for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Prompt', 'sans-serif'],
+                    },
+                }
+            }
         }
-        .animate-flow {
-            stroke-dasharray: 8 6;
-            animation: flow 1.2s linear infinite;
+    </script>
+    <style>
+        body { font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .tab-active { border-bottom: 3px solid #3b82f6; color: #2563eb; font-weight: 600; }
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        /* Touch friendly improvements */
+        input, select, textarea, button { font-size: 16px !important; }
+        @media (max-width: 768px) {
+            .phet-frame { min-height: 450px !important; }
         }
     </style>
 </head>
-<body class="min-h-screen bg-slate-50 p-4 md:p-8 font-sans text-slate-900 text-base md:text-lg">
+<body class="bg-slate-50 text-slate-800 h-full flex flex-col">
 
-    <header class="max-w-5xl mx-auto mb-6 flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100">
-        <div>
-            <h1 class="text-3xl md:text-4xl font-bold text-slate-800 tracking-tight">Resistor Dashboard</h1>
-            <p class="text-slate-500 text-base md:text-lg mt-1">การอ่านค่าสีและการต่อวงจรเบื้องต้น</p>
-        </div>
-        <div class="flex gap-4">
-            <div class="flex items-center gap-3 bg-blue-50 px-5 py-3 rounded-2xl border border-blue-100">
-                <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-sm">JJ</div>
-                <div>
-                    <p class="text-sm font-bold text-blue-700 leading-none mb-1">Technical Lead</p>
-                    <p class="text-base text-slate-700">"เน้นความแม่นยำครับ"</p>
+    <header class="bg-indigo-950 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div class="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto justify-between sm:justify-start">
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <div class="bg-indigo-600 p-2 sm:p-2.5 rounded-xl text-white shadow-lg">
+                        <i class="fa-solid fa-bolt-lightning text-lg sm:text-xl text-yellow-300"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-sm sm:text-lg md:text-xl font-bold tracking-tight leading-tight">Lab วินิจฉัยตัวต้านทาน</h1>
+                        <p class="text-[10px] sm:text-xs text-indigo-200">ห้องปฏิบัติการเสมือนและวงจรไฟฟ้ากระแสตรง</p>
+                    </div>
+                </div>
+                <!-- Mobile Profile Badge -->
+                <div class="flex sm:hidden items-center space-x-1.5 bg-indigo-900/80 px-2.5 py-1 rounded-full border border-indigo-700/50">
+                    <img src="https://github.com/metawat888/Picture/raw/69f9d3a46e017adc43abb8db3503ea8106ecae61/97488303_2887790847941184_353651305119481856_n.jpg" alt="นายเมธาวัฒน์ พงสะพัง" class="w-6 h-6 rounded-full object-cover border border-indigo-400" onerror="this.src='https://placehold.co/100x100/4f46e5/ffffff?text=M'">
+                    <span class="text-[10px] font-medium text-indigo-100">เมธาวัฒน์</span>
                 </div>
             </div>
-            <div class="flex items-center gap-3 bg-pink-50 px-5 py-3 rounded-2xl border border-pink-100">
-                <div class="w-12 h-12 bg-pink-400 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-sm">B</div>
-                <div>
-                    <p class="text-sm font-bold text-pink-700 leading-none mb-1">Guide</p>
-                    <p class="text-base text-slate-700">"อ่านสีง่ายนิดเดียว!"</p>
+
+            <!-- Desktop Profile Badge -->
+            <div class="hidden sm:flex items-center space-x-3">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    <span class="w-2 h-2 mr-1.5 rounded-full bg-emerald-400 animate-pulse"></span> พร้อมใช้งาน
+                </span>
+                <div class="flex items-center space-x-2 bg-indigo-900/80 px-3 py-1.5 rounded-full border border-indigo-700/50 shadow-inner">
+                    <img src="https://github.com/metawat888/Picture/raw/69f9d3a46e017adc43abb8db3503ea8106ecae61/97488303_2887790847941184_353651305119481856_n.jpg" alt="นายเมธาวัฒน์ พงสะพัง" class="w-7 h-7 rounded-full object-cover border border-indigo-400" onerror="this.src='https://placehold.co/100x100/4f46e5/ffffff?text=M'">
+                    <span class="text-xs font-medium text-indigo-100">พัฒนาโดย นายเมธาวัฒน์ พงสะพัง</span>
                 </div>
             </div>
         </div>
     </header>
 
-    <nav class="max-w-5xl mx-auto mb-8 flex flex-wrap gap-3 bg-white p-2 rounded-2xl shadow-sm border border-slate-100 w-fit">
-        <button onclick="switchTab('calculator')" id="nav-calculator" class="flex items-center gap-3 px-6 py-3.5 rounded-xl text-base md:text-lg font-bold transition-all bg-blue-600 text-white shadow-lg">
-            <i data-lucide="calculator" class="w-5 h-5"></i> เครื่องคำนวณรหัสสี
-        </button>
-        <button onclick="switchTab('lab')" id="nav-lab" class="flex items-center gap-3 px-6 py-3.5 rounded-xl text-base md:text-lg font-bold transition-all text-slate-600 hover:bg-slate-50">
-            <i data-lucide="beaker" class="w-5 h-5"></i> Lab 1: ต่อวงจร
-        </button>
-        <button onclick="switchTab('content')" id="nav-content" class="flex items-center gap-3 px-6 py-3.5 rounded-xl text-base md:text-lg font-bold transition-all text-slate-600 hover:bg-slate-50">
-            <i data-lucide="file-text" class="w-5 h-5"></i> เนื้อหาบทเรียน
-        </button>
+    <nav class="bg-white border-b border-slate-200 shadow-sm sticky top-[53px] sm:top-[61px] z-40">
+        <div class="max-w-7xl mx-auto px-2 sm:px-6 flex space-x-2 sm:space-x-8 overflow-x-auto no-scrollbar">
+            <button onclick="switchTab('simulator')" id="btn-simulator" class="py-3 px-3 border-b-2 font-medium text-xs sm:text-sm transition tab-active flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap">
+                <i class="fa-solid fa-desktop"></i> <span>จำลอง PhET</span>
+            </button>
+            <button onclick="switchTab('calculator')" id="btn-calculator" class="py-3 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium text-xs sm:text-sm transition flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap">
+                <i class="fa-solid fa-calculator"></i> <span>เตรียมการทดลอง</span>
+            </button>
+            <button onclick="switchTab('experiment')" id="btn-experiment" class="py-3 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium text-xs sm:text-sm transition flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap">
+                <i class="fa-solid fa-clipboard-list"></i> <span>บันทึกผลการทดลอง</span>
+            </button>
+            <button onclick="switchTab('theory')" id="btn-theory" class="py-3 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium text-xs sm:text-sm transition flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap">
+                <i class="fa-solid fa-book-open"></i> <span>ทฤษฎีและสูตร</span>
+            </button>
+        </div>
     </nav>
 
-    <main class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <section class="lg:col-span-2 space-y-8">
-          
-          <!-- Calculator Tab Content -->
-          <div id="tab-calculator" class="bg-white p-6 md:p-10 rounded-3xl shadow-md border border-slate-100 relative overflow-hidden">
-              <div class="absolute top-0 right-0 p-4 pointer-events-none">
-                <i data-lucide="calculator" class="text-slate-100 w-20 h-20"></i>
-              </div>
-              <h2 class="text-2xl md:text-3xl font-bold mb-6 flex items-center gap-3 relative z-10 text-slate-800">
-                <i data-lucide="settings" class="w-6 h-6 text-blue-500"></i> เครื่องคำนวณรหัสสี
-              </h2>
-              <div class="flex justify-center items-center py-20 bg-slate-50 rounded-2xl mb-8 relative border border-dashed border-slate-200">
-                  <div class="absolute w-full h-2 bg-gradient-to-b from-slate-300 via-slate-400 to-slate-500 z-0 rounded-full"></div>
-                  <!-- Resistor graphic body -->
-                  <div class="w-80 h-32 bg-gradient-to-b from-[#f2d9bc] via-[#e5c7a3] to-[#cba37a] relative z-10 rounded-[4rem] border-4 border-[#d4b58f]/50 flex justify-between items-center px-14 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1)] transition-all hover:shadow-2xl overflow-hidden group">
-                      <div class="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-b from-white/30 to-transparent pointer-events-none"></div>
-                      <div id="band1-preview" class="w-6 h-full relative" style="background-color: #8B4513;"><div class="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/20"></div></div>
-                      <div id="band2-preview" class="w-6 h-full relative" style="background-color: #000000;"><div class="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/20"></div></div>
-                      <div id="band3-preview" class="w-6 h-full relative" style="background-color: #FF0000;"><div class="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/20"></div></div>
-                      <div id="band4-preview" class="w-6 h-full ml-12 relative shadow-md" style="background-color: #FFD700;"><div class="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/20"></div></div>
-                      <div class="absolute top-[10%] left-[10%] w-[80%] h-[15%] bg-white/10 rounded-full blur-[2px] pointer-events-none"></div>
-                  </div>
-              </div>
-              <div class="text-center p-8 bg-slate-900 rounded-3xl text-white shadow-xl relative z-10 mb-8 border-b-4 border-blue-500">
-                 <p class="text-slate-400 text-xs md:text-sm uppercase tracking-widest font-bold mb-2">ค่าความต้านทานสุทธิ</p>
-                 <div id="resistance-output" class="text-5xl md:text-6xl font-mono font-bold text-yellow-400 tracking-tight">1.00 kΩ</div>
-                 <p id="tolerance-output" class="mt-2 text-slate-300 text-base md:text-lg">ความคลาดเคลื่อน: ±5%</p>
-              </div>
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
-                 <div class="space-y-2">
-                     <label class="text-xs md:text-sm font-bold text-slate-600 block text-center uppercase tracking-wider">หลักที่ 1</label>
-                     <select id="select-band1" onchange="updateCalculator()" class="w-full p-3.5 rounded-2xl border-2 border-slate-100 bg-white text-sm md:text-base font-semibold focus:border-blue-500 outline-none transition-all cursor-pointer shadow-sm hover:border-slate-200">
-                     </select>
-                 </div>
-                 <div class="space-y-2">
-                     <label class="text-xs md:text-sm font-bold text-slate-600 block text-center uppercase tracking-wider">หลักที่ 2</label>
-                     <select id="select-band2" onchange="updateCalculator()" class="w-full p-3.5 rounded-2xl border-2 border-slate-100 bg-white text-sm md:text-base font-semibold focus:border-blue-500 outline-none transition-all cursor-pointer shadow-sm hover:border-slate-200">
-                     </select>
-                 </div>
-                 <div class="space-y-2">
-                     <label class="text-xs md:text-sm font-bold text-slate-600 block text-center uppercase tracking-wider">ตัวคูณ</label>
-                     <select id="select-band3" onchange="updateCalculator()" class="w-full p-3.5 rounded-2xl border-2 border-slate-100 bg-white text-sm md:text-base font-semibold focus:border-blue-500 outline-none transition-all cursor-pointer shadow-sm hover:border-slate-200">
-                     </select>
-                 </div>
-                 <div class="space-y-2">
-                     <label class="text-xs md:text-sm font-bold text-slate-600 block text-center uppercase tracking-wider">ความคลาดเคลื่อน</label>
-                     <select id="select-band4" onchange="updateCalculator()" class="w-full p-3.5 rounded-2xl border-2 border-slate-100 bg-white text-sm md:text-base font-semibold focus:border-blue-500 outline-none transition-all cursor-pointer shadow-sm hover:border-slate-200">
-                     </select>
-                 </div>
-              </div>
-          </div>
+    <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 overflow-y-auto">
 
-          <!-- Lab Tab Content -->
-          <div id="tab-lab" class="bg-white p-6 md:p-10 rounded-3xl shadow-md border border-slate-100 hidden">
-              <h2 class="text-2xl md:text-3xl font-bold mb-8 flex items-center gap-3 text-slate-800">
-                <i data-lucide="beaker" class="w-6 h-6 text-indigo-500"></i> โหมดจำลองวงจรไฟฟ้า
-              </h2>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                <!-- Series -->
-                <div class="bg-slate-50 p-6 md:p-8 rounded-3xl border border-slate-100 flex flex-col items-center">
-                  <div class="mb-6 flex items-center gap-2 text-blue-600 font-bold uppercase text-sm tracking-wider"><i data-lucide="zap" class="w-5 h-5"></i> อนุกรม (Series)</div>
-                  <div class="relative h-40 w-full flex items-center justify-center overflow-hidden rounded-2xl bg-slate-100/60">
-                    <svg class="absolute w-full h-full" viewBox="0 0 300 120" preserveAspectRatio="xMidYMid meet">
-                      <!-- Outer Circuit Path -->
-                      <path d="M 20 60 H 280" class="stroke-slate-300" stroke-width="4" fill="none" stroke-linecap="round" />
-                      <!-- Animated Current Flow -->
-                      <path d="M 20 60 H 280" class="stroke-blue-500 animate-flow" stroke-width="3" fill="none" stroke-linecap="round" />
-                    </svg>
-                    <div class="flex gap-16 items-center relative z-10 h-full">
-                        <div id="mini-resistor-1" class="relative flex flex-col items-center">
-                            <div class="relative w-16 h-7 bg-gradient-to-b from-[#f2d9bc] via-[#e5c7a3] to-[#cba37a] rounded-full border border-[#d4b58f] flex justify-between items-center px-2 overflow-hidden shadow-sm z-10">
-                                <div id="mr1-b1" class="w-1.5 h-full opacity-90 bg-red-500"></div>
-                                <div id="mr1-b2" class="w-1.5 h-full opacity-90 bg-red-500"></div>
-                                <div id="mr1-b3" class="w-1.5 h-full opacity-90 bg-amber-800"></div>
-                            </div>
-                        </div>
-                        <div id="mini-resistor-2" class="relative flex flex-col items-center">
-                            <div class="relative w-16 h-7 bg-gradient-to-b from-[#f2d9bc] via-[#e5c7a3] to-[#cba37a] rounded-full border border-[#d4b58f] flex justify-between items-center px-2 overflow-hidden shadow-sm z-10">
-                                <div id="mr2-b1" class="w-1.5 h-full opacity-90 bg-amber-800"></div>
-                                <div id="mr2-b2" class="w-1.5 h-full opacity-90 bg-black"></div>
-                                <div id="mr2-b3" class="w-1.5 h-full opacity-90 bg-amber-800"></div>
-                            </div>
-                        </div>
-                    </div>
-                  </div>
-                  <div class="text-center mt-8 w-full px-4">
-                    <div class="text-sm text-slate-500 mb-2 font-mono">R(รวม) = R1 + R2 + ...</div>
-                    <div id="series-rt-output" class="text-3xl md:text-4xl font-mono font-bold text-blue-600">320 Ω</div>
-                  </div>
-                </div>
-                <!-- Parallel -->
-                <div class="bg-slate-50 p-6 md:p-8 rounded-3xl border border-slate-100 flex flex-col items-center">
-                  <div class="mb-6 flex items-center gap-2 text-indigo-600 font-bold uppercase text-sm tracking-wider"><i data-lucide="share-2" class="w-5 h-5"></i> ขนาน (Parallel)</div>
-                  <div class="relative h-44 w-full flex items-center justify-center overflow-hidden rounded-2xl bg-slate-100/60">
-                    <svg class="absolute w-full h-full" viewBox="0 0 300 140" preserveAspectRatio="xMidYMid meet">
-                      <!-- Parallel Circuit Path Structure: top branch at y=35, bottom branch at y=105 -->
-                      <path d="M 20 70 H 65 M 235 70 H 280 M 65 35 V 105 M 235 35 V 105 M 65 35 H 235 M 65 105 H 235" class="stroke-slate-300" stroke-width="4" fill="none" stroke-linejoin="round" stroke-linecap="round" />
-                      <!-- Animated Flow Top Branch -->
-                      <path d="M 20 70 H 65 V 35 H 235 V 70 H 280" class="stroke-indigo-500 animate-flow" stroke-width="3" fill="none" stroke-linejoin="round" stroke-linecap="round" />
-                      <!-- Animated Flow Bottom Branch -->
-                      <path d="M 20 70 H 65 V 105 H 235 V 70 H 280" class="stroke-indigo-500 animate-flow" stroke-width="3" fill="none" stroke-linejoin="round" stroke-linecap="round" />
-                    </svg>
-                    <div class="absolute inset-0 flex flex-col justify-between items-center py-6 pointer-events-none">
-                        <!-- Top Resistor -->
-                        <div class="relative flex items-center justify-center pointer-events-auto">
-                            <div class="relative w-16 h-7 bg-gradient-to-b from-[#f2d9bc] via-[#e5c7a3] to-[#cba37a] rounded-full border border-[#d4b58f] flex justify-between items-center px-2 overflow-hidden shadow-sm z-10">
-                                <div class="w-1.5 h-full opacity-90 bg-red-500"></div><div class="w-1.5 h-full opacity-90 bg-red-500"></div><div class="w-1.5 h-full opacity-90 bg-amber-800"></div>
-                            </div>
-                        </div>
-                        <!-- Bottom Resistor -->
-                        <div class="relative flex items-center justify-center pointer-events-auto">
-                            <div class="relative w-16 h-7 bg-gradient-to-b from-[#f2d9bc] via-[#e5c7a3] to-[#cba37a] rounded-full border border-[#d4b58f] flex justify-between items-center px-2 overflow-hidden shadow-sm z-10">
-                                <div class="w-1.5 h-full opacity-90 bg-amber-800"></div><div class="w-1.5 h-full opacity-90 bg-black"></div><div class="w-1.5 h-full opacity-90 bg-amber-800"></div>
-                            </div>
-                        </div>
-                    </div>
-                  </div>
-                  <div class="text-center mt-8 w-full px-4">
-                    <div class="text-sm text-slate-500 mb-2 font-mono">1/R(รวม) = 1/R1 + 1/R2 + ...</div>
-                    <div id="parallel-rt-output" class="text-3xl md:text-4xl font-mono font-bold text-indigo-600">68.75 Ω</div>
-                  </div>
-                </div>
-              </div>
-              <div class="bg-slate-900 p-8 md:p-10 rounded-3xl text-white shadow-xl relative overflow-hidden border-t-4 border-indigo-500">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
-                  <div class="space-y-4">
-                    <label class="text-xs md:text-sm font-bold text-slate-300 uppercase tracking-widest">Resistor 1 (R1)</label>
-                    <input type="range" id="slider-r1" min="1" max="1000" step="1" value="220" oninput="updateLab()" class="w-full accent-indigo-500 cursor-pointer h-2 bg-slate-700 rounded-lg" />
-                    <div id="val-r1" class="text-2xl font-mono text-yellow-400">220 Ω</div>
-                  </div>
-                  <div class="space-y-4">
-                    <label class="text-xs md:text-sm font-bold text-slate-300 uppercase tracking-widest">Resistor 2 (R2)</label>
-                    <input type="range" id="slider-r2" min="1" max="1000" step="1" value="100" oninput="updateLab()" class="w-full accent-indigo-500 cursor-pointer h-2 bg-slate-700 rounded-lg" />
-                    <div id="val-r2" class="text-2xl font-mono text-yellow-400">100 Ω</div>
-                  </div>
-                </div>
-              </div>
-          </div>
-
-          <!-- Content Tab Content -->
-          <div id="tab-content" class="bg-white p-6 md:p-10 rounded-3xl shadow-md border border-slate-100 hidden">
-              <h2 class="text-2xl md:text-3xl font-bold mb-6 flex items-center gap-3 text-emerald-600"><i data-lucide="book-open" class="w-7 h-7"></i> ตัวต้านทานคืออะไร?</h2>
-              <div class="prose prose-slate max-w-none text-slate-700 leading-relaxed space-y-6 text-base md:text-lg">
-                <p><strong>ตัวต้านทาน (Resistor)</strong> ทำหน้าที่ในการจำกัดการไหลของกระแสไฟฟ้าในวงจร เพื่อให้อุปกรณ์ต่างๆ ทำงานได้อย่างปลอดภัยและไม่เกิดความเสียหายจากกระแสเกิน</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 my-8">
-                  <div class="bg-emerald-50 p-6 md:p-8 rounded-3xl border border-emerald-100">
-                     <h3 class="font-bold text-emerald-800 text-lg md:text-xl mb-4">สัญลักษณ์ในวงจร</h3>
-                     <div class="flex justify-around items-center h-24">
-                        <div class="text-center"><svg width="110" height="45" class="mx-auto mb-2"><path d="M0 22.5 H22 L27 10 L37 35 L47 10 L57 35 L67 10 L77 35 L82 22.5 H110" stroke="#065f46" stroke-width="2.5" fill="none"/></svg><span class="text-xs font-bold text-emerald-700">ANSI (สหรัฐอเมริกา)</span></div>
-                        <div class="text-center"><svg width="70" height="35" class="mx-auto mb-2"><rect x="10" y="5" width="50" height="25" stroke="#065f46" stroke-width="2.5" fill="none"/><path d="M0 17.5 H10 M60 17.5 H70" stroke="#065f46" stroke-width="2.5"/></svg><span class="text-xs font-bold text-emerald-700">IEC (สากล)</span></div>
-                     </div>
-                  </div>
-                  <div class="bg-amber-50 p-6 md:p-8 rounded-3xl border border-amber-100">
-                     <h3 class="font-bold text-amber-800 text-lg md:text-xl mb-3">หน่วยวัดและการแปลงค่า</h3>
-                     <p class="mb-3">ใช้หน่วย <strong>โอห์ม (Ω)</strong> ยิ่งค่าตัวเลขเยอะ ยิ่งมีความสามารถในการต้านทานกระแสไฟฟ้าได้มาก</p>
-                     <ul class="list-disc list-inside space-y-1 font-mono text-base"><li>1,000 Ω = 1 kΩ (กิโลโอห์ม)</li><li>1,000,000 Ω = 1 MΩ (เมกะโอห์ม)</li></ul>
-                  </div>
-                </div>
-              </div>
-          </div>
+        <!-- TAB 1: PhET SIMULATOR -->
+        <section id="tab-simulator" class="space-y-4 h-full flex flex-col">
+            <div id="simulator-container" class="flex-1 bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden min-h-[500px] sm:min-h-[600px] relative phet-frame">
+                <iframe src="https://phet.colorado.edu/sims/html/circuit-construction-kit-dc-virtual-lab/latest/circuit-construction-kit-dc-virtual-lab_th.html"
+                        class="w-full h-full border-0 absolute inset-0"
+                        allowfullscreen>
+                </iframe>
+            </div>
         </section>
 
-        <!-- Sidebar -->
-        <aside class="space-y-6">
-          <div id="sidebar-color-ref" class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100">
-            <h3 class="font-bold text-lg mb-6 flex items-center gap-3 text-slate-800 border-b pb-4 border-slate-100"><i data-lucide="info" class="w-5 h-5 text-slate-400"></i> ตารางอ้างอิงรหัสสี</h3>
-            <div id="color-table-list" class="space-y-2">
-               <!-- Populated via JavaScript -->
-            </div>
-          </div>
-          <div class="bg-slate-900 p-6 md:p-8 rounded-3xl text-white shadow-lg border-t-4 border-indigo-500">
-            <h3 class="font-bold mb-3 flex items-center gap-2 text-indigo-400 uppercase text-xs tracking-widest"><i data-lucide="user" class="w-4 h-4"></i> System Status</h3>
-            <div class="text-sm space-y-2 opacity-90 font-mono">
-                <div class="flex justify-between"><span>Admin:</span><span class="text-slate-300">JJ</span></div>
-                <div class="flex justify-between"><span>Build:</span><span class="text-slate-300">v1.7.0-HTML</span></div>
-                <div class="mt-4 pt-4 border-t border-slate-800 italic leading-relaxed text-slate-300">
-                    '"ขยายขนาดตัวอักษรให้ใหญ่และอ่านสบายตาขึ้นเรียบร้อยครับ"' - JJ
+        <!-- TAB 2: CALCULATOR & SCHEMATIC -->
+        <section id="tab-calculator" class="hidden space-y-4 sm:space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+                <!-- Control Panel -->
+                <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4 sm:space-y-5">
+                    <h2 class="text-base sm:text-lg font-bold text-slate-900 flex items-center space-x-2">
+                        <i class="fa-solid fa-sliders text-indigo-600"></i>
+                        <span>เตรียมการทดลองวงจรไฟฟ้า</span>
+                    </h2>
+
+                    <div>
+                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">รูปแบบการต่อวงจร</label>
+                        <select id="calc-type" onchange="updateCalculator()" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="series">วงจรอนุกรม (Series Circuit)</option>
+                            <option value="parallel">วงจรขนาน (Parallel Circuit)</option>
+                            <option value="mixed">วงจรผสม (Series-Parallel)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">แรงดันไฟฟ้าแหล่งจ่ายจากโจทย์ (V รวม)</label>
+                        <div class="relative">
+                            <input type="number" id="calc-voltage" value="12" min="1" max="240" step="0.5" oninput="updateCalculator()" class="w-full p-2.5 pl-3 pr-12 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <span class="absolute right-3 top-2.5 text-slate-400 text-sm font-semibold">V</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 pt-2 border-t border-slate-100">
+                        <label class="block text-xs sm:text-sm font-medium text-slate-700">ค่าความต้านทานที่ตั้งใน PhET (R)</label>
+                        
+                        <div>
+                            <div class="flex justify-between text-xs text-slate-500 mb-1">
+                                <span>R1</span>
+                                <span id="r1-val-label">10 ohm</span>
+                            </div>
+                            <input type="range" id="calc-r1" min="1" max="100" value="10" oninput="updateCalculator()" class="w-full accent-indigo-600 py-1">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs text-slate-500 mb-1">
+                                <span>R2</span>
+                                <span id="r2-val-label">20 ohm</span>
+                            </div>
+                            <input type="range" id="calc-r2" min="1" max="100" value="20" oninput="updateCalculator()" class="w-full accent-indigo-600 py-1">
+                        </div>
+
+                        <div id="r3-container">
+                            <div class="flex justify-between text-xs text-slate-500 mb-1">
+                                <span>R3</span>
+                                <span id="r3-val-label">30 ohm</span>
+                            </div>
+                            <input type="range" id="calc-r3" min="1" max="100" value="30" oninput="updateCalculator()" class="w-full accent-indigo-600 py-1">
+                        </div>
+                    </div>
+
+                    <!-- Input fields for student to record PhET results manually -->
+                    <div class="space-y-3 pt-3 border-t border-slate-200">
+                        <h3 class="text-xs font-bold text-indigo-900 uppercase tracking-wider">กรอกผลลัพธ์ที่วัดได้จาก PhET (V และ I ทุกตัว)</h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-medium text-slate-600 mb-1">V1 (โวลต์)</label>
+                                <input type="number" id="phet-input-v1" placeholder="เช่น 2.0" step="0.01" oninput="updateCalculator()" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-medium text-slate-600 mb-1">I1 (แอมป์)</label>
+                                <input type="number" id="phet-input-i1" placeholder="เช่น 0.2" step="0.001" oninput="updateCalculator()" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-medium text-slate-600 mb-1">V2 (โวลต์)</label>
+                                <input type="number" id="phet-input-v2" placeholder="เช่น 4.0" step="0.01" oninput="updateCalculator()" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-medium text-slate-600 mb-1">I2 (แอมป์)</label>
+                                <input type="number" id="phet-input-i2" placeholder="เช่น 0.2" step="0.001" oninput="updateCalculator()" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-medium text-slate-600 mb-1">V3 (โวลต์)</label>
+                                <input type="number" id="phet-input-v3" placeholder="เช่น 6.0" step="0.01" oninput="updateCalculator()" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-medium text-slate-600 mb-1">I3 (แอมป์)</label>
+                                <input type="number" id="phet-input-i3" placeholder="เช่น 0.2" step="0.001" oninput="updateCalculator()" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="logToExperiment()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium transition shadow-sm flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-floppy-disk"></i> <span>บันทึกผล PhET ลงตารางทดลอง</span>
+                    </button>
+                </div>
+
+                <!-- Results & Visual Dashboard -->
+                <div class="lg:col-span-2 space-y-4 sm:space-y-6">
+                    <!-- Summary Metric Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center space-x-4">
+                            <div class="bg-indigo-50 text-indigo-600 p-3.5 rounded-xl text-xl">
+                                <i class="fa-solid fa-gauge-high"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-medium text-slate-500">ความต้านทานรวม (R_total)</p>
+                                <h3 id="res-rtotal" class="text-lg sm:text-xl font-bold text-slate-900 mt-0.5">0.00 ohm</h3>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center space-x-4">
+                            <div class="bg-amber-50 text-amber-600 p-3.5 rounded-xl text-xl">
+                                <i class="fa-solid fa-bolt"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-medium text-slate-500">กระแสไฟฟ้ารวม (I_total)</p>
+                                <h3 id="res-itotal" class="text-lg sm:text-xl font-bold text-slate-900 mt-0.5">0.00 A</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Breakdown Card -->
+                    <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                        <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center space-x-2">
+                            <i class="fa-solid fa-chart-bar text-indigo-600"></i>
+                            <span>ตารางบันทึกค่า V และ I ที่วัดได้จาก PhET (แยกรายตัวต้านทาน)</span>
+                        </h3>
+                        <div class="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                            <table class="w-full text-left text-xs sm:text-sm min-w-[450px]">
+                                <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                                    <tr>
+                                        <th class="p-2.5 sm:p-3 font-semibold">ตัวต้านทาน</th>
+                                        <th class="p-2.5 sm:p-3 font-semibold">ค่าความต้านทาน (R)</th>
+                                        <th class="p-2.5 sm:p-3 font-semibold">แรงดันตกคร่อมที่วัดได้ (V)</th>
+                                        <th class="p-2.5 sm:p-3 font-semibold">กระแสไฟฟ้าที่วัดได้ (I)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="breakdown-table-body" class="divide-y divide-slate-100">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Chart Visualizer -->
+                    <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-900 text-sm sm:text-base mb-4 flex items-center space-x-2">
+                            <i class="fa-solid fa-chart-pie text-indigo-600"></i>
+                            <span>การเปรียบเทียบแรงดันไฟฟ้า (V) ที่กรอกแต่ละตัวต้านทาน</span>
+                        </h3>
+                        <div class="h-56 sm:h-64 relative">
+                            <canvas id="circuitChart"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
-          </div>
-        </aside>
+        </section>
+
+        <!-- TAB 3: EXPERIMENT LOG & REPORT -->
+        <section id="tab-experiment" class="hidden space-y-4 sm:space-y-6">
+            <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4 sm:space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                        <h2 class="text-base sm:text-lg font-bold text-slate-900">บันทึกผลการทดลองจาก PhET (Lab Data Log)</h2>
+                        <p class="text-xs sm:text-sm text-slate-500">ตารางบันทึกค่า V และ I ที่นักเรียนทดลองต่อวงจรและอ่านค่าจริงจากโปรแกรม PhET</p>
+                    </div>
+                    <div class="flex space-x-2 sm:space-x-3 w-full sm:w-auto">
+                        <button onclick="clearExperimentLogs()" class="flex-1 sm:flex-none px-3.5 py-2 border border-red-200 text-red-600 hover:bg-red-50 rounded-xl text-xs sm:text-sm font-medium transition flex items-center justify-center space-x-1.5">
+                            <i class="fa-solid fa-trash-can"></i> <span>ล้างข้อมูล</span>
+                        </button>
+                        <button onclick="exportPDFReport()" class="flex-1 sm:flex-none px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs sm:text-sm font-medium transition shadow-sm flex items-center justify-center space-x-1.5">
+                            <i class="fa-solid fa-file-pdf"></i> <span>บันทึกรายงานเป็น PDF</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto border border-slate-200 rounded-xl -mx-4 sm:mx-0 px-4 sm:px-0">
+                    <table class="w-full text-left text-xs sm:text-sm min-w-[700px]">
+                        <thead class="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
+                            <tr>
+                                <th class="p-2.5 sm:p-3">ครั้งที่</th>
+                                <th class="p-2.5 sm:p-3">รูปแบบวงจร</th>
+                                <th class="p-2.5 sm:p-3">V รวม (โจทย์)</th>
+                                <th class="p-2.5 sm:p-3">R1, R2, R3 (ohm)</th>
+                                <th class="p-2.5 sm:p-3">V วัดได้ (V1, V2, V3)</th>
+                                <th class="p-2.5 sm:p-3">I วัดได้ (I1, I2, I3)</th>
+                                <th class="p-2.5 sm:p-3 text-center">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="experiment-table-body" class="divide-y divide-slate-100">
+                            <tr>
+                                <td colspan="7" class="p-6 text-center text-slate-400">ยังไม่มีข้อมูลการทดลอง กรุณาต่อวงจรใน PhET แล้วกรอกค่า V และ I ในหน้าเตรียมการทดลอง</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Analysis Summary Input -->
+                <div class="p-4 sm:p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                    <h3 class="font-semibold text-slate-900 text-sm sm:text-base flex items-center space-x-2">
+                        <i class="fa-solid fa-pen-to-square text-indigo-600"></i>
+                        <span>สรุปผลการทดลองและข้อสังเกต</span>
+                    </h3>
+                    <textarea id="experiment-conclusion" rows="3" placeholder="พิมพ์สรุปผลการทดลอง เช่น เปรียบเทียบแรงดันและกระแสไฟฟ้าในวงจรอนุกรมและขนาน..." class="w-full p-3 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                    <div class="flex justify-end">
+                        <button onclick="saveConclusion()" class="px-4 sm:px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs sm:text-sm font-medium transition shadow-sm">
+                            บันทึกสรุปผล
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: THEORY & FORMULAS -->
+        <section id="tab-theory" class="hidden space-y-4 sm:space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <!-- Series Theory -->
+                <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-indigo-50 text-indigo-600 p-3 rounded-xl text-base sm:text-lg">
+                            <i class="fa-solid fa-link"></i>
+                        </div>
+                        <h3 class="text-base sm:text-lg font-bold text-slate-900">วงจรอนุกรม (Series Circuit)</h3>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                        วงจรที่ต่ออุปกรณ์ไฟฟ้าเรียงต่อกันไปในเส้นทางเดียวกัน ทำให้กระแสไฟฟ้าที่ไหลผ่านตัวต้านทานทุกตัวมีค่าเท่ากัน
+                    </p>
+                    <div class="bg-slate-50 p-3.5 sm:p-4 rounded-xl space-y-2 text-xs sm:text-sm font-mono border border-slate-200">
+                        <p class="text-indigo-900 font-bold">สูตรคำนวณหลัก:</p>
+                        <p>1. R_total = R1 + R2 + R3</p>
+                        <p>2. I_total = I1 = I2 = I3</p>
+                        <p>3. V_total = V1 + V2 + V3</p>
+                    </div>
+                </div>
+
+                <!-- Parallel Theory -->
+                <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-emerald-50 text-emerald-600 p-3 rounded-xl text-base sm:text-lg">
+                            <i class="fa-solid fa-bars-staggered"></i>
+                        </div>
+                        <h3 class="text-base sm:text-lg font-bold text-slate-900">วงจรขนาน (Parallel Circuit)</h3>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                        วงจรที่ต่อคร่อมจุดร่วมเดียวกันทำให้แรงดันไฟฟ้าตกคร่อมตัวต้านทานทุกตัวมีค่าเท่ากับแรงดันแหล่งจ่าย
+                    </p>
+                    <div class="bg-slate-50 p-3.5 sm:p-4 rounded-xl space-y-2 text-xs sm:text-sm font-mono border border-slate-200">
+                        <p class="text-emerald-900 font-bold">สูตรคำนวณหลัก:</p>
+                        <p>1. (1 / R_total) = (1 / R1) + (1 / R2) + (1 / R3)</p>
+                        <p>2. V_total = V1 = V2 = V3</p>
+                        <p>3. I_total = I1 + I2 + I3</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </main>
 
-    <footer class="max-w-5xl mx-auto mt-12 mb-8 text-center text-slate-400 text-xs md:text-sm uppercase tracking-wider border-t border-slate-200 pt-8">
-      <p>© 2025 Electronic Learning Center • Developed by Mr. Metawat Phongsaphang</p>
-    </footer>
+    <!-- Hidden Printable Report Template for PDF Generation -->
+    <div id="pdf-report-template" class="hidden p-6 sm:p-8 bg-white text-slate-800" style="width: 210mm; min-height: 297mm; font-family: 'Prompt', sans-serif;">
+        <div class="flex justify-between items-center border-b-2 border-indigo-900 pb-4 mb-6">
+            <div>
+                <h1 class="text-xl sm:text-2xl font-bold text-indigo-900">รายงานการทดลองวงจรไฟฟ้าตัวต้านทาน</h1>
+                <p class="text-xs sm:text-sm text-slate-600">วิชาปฏิบัติการห้องเรียนเสมือนจริง (Virtual Physics Lab)</p>
+            </div>
+            <div class="text-right">
+                <p class="text-[11px] sm:text-xs font-medium text-slate-500">ผู้จัดทำ: นายเมธาวัฒน์ พงสะพัง</p>
+                <p class="text-[10px] sm:text-xs text-slate-400" id="pdf-date-str"></p>
+            </div>
+        </div>
+
+        <!-- Section 1: PhET Simulation Overview -->
+        <div class="mb-6 space-y-3">
+            <h2 class="text-sm sm:text-base font-bold text-indigo-900 border-l-4 border-indigo-600 pl-2">1. ภาพจำลองการต่อวงจร PhET Simulation</h2>
+            <div class="border border-slate-300 rounded-lg p-2 sm:p-3 bg-slate-50 text-center">
+                <div class="w-full rounded overflow-hidden relative border border-slate-200" style="height: 350px;">
+                    <iframe src="https://phet.colorado.edu/sims/html/circuit-construction-kit-dc-virtual-lab/latest/circuit-construction-kit-dc-virtual-lab_th.html" class="w-full h-full border-0"></iframe>
+                </div>
+                <p class="text-[11px] text-slate-500 mt-2">อ้างอิงจากโปรแกรม PhET Circuit Construction Kit: DC - Virtual Lab</p>
+            </div>
+        </div>
+
+        <!-- Section 2: Preparation & Circuit Parameters -->
+        <div class="mb-6 space-y-3">
+            <h2 class="text-sm sm:text-base font-bold text-indigo-900 border-l-4 border-indigo-600 pl-2">2. ข้อมูลการเตรียมการทดลองปัจจุบัน</h2>
+            <div class="grid grid-cols-3 gap-3 bg-indigo-50/50 p-4 rounded-lg border border-indigo-100 text-xs sm:text-sm">
+                <div>
+                    <span class="text-slate-500 text-[11px] block">รูปแบบวงจร:</span>
+                    <strong id="pdf-rep-type" class="text-indigo-900">-</strong>
+                </div>
+                <div>
+                    <span class="text-slate-500 text-[11px] block">แรงดันแหล่งจ่าย (V รวม):</span>
+                    <strong id="pdf-rep-voltage" class="text-indigo-900">-</strong>
+                </div>
+                <div>
+                    <span class="text-slate-500 text-[11px] block">ความต้านทานรวม (R รวม):</span>
+                    <strong id="pdf-rep-rtotal" class="text-indigo-900">-</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Experiment Logs Table -->
+        <div class="mb-6 space-y-3">
+            <h2 class="text-sm sm:text-base font-bold text-indigo-900 border-l-4 border-indigo-600 pl-2">3. บันทึกผลการทดลองจาก PhET</h2>
+            <table class="w-full text-left text-[11px] sm:text-xs border-collapse border border-slate-300">
+                <thead>
+                    <tr class="bg-indigo-900 text-white">
+                        <th class="p-2 border border-slate-300">ครั้งที่</th>
+                        <th class="p-2 border border-slate-300">รูปแบบวงจร</th>
+                        <th class="p-2 border border-slate-300">V รวม</th>
+                        <th class="p-2 border border-slate-300">R1, R2, R3 (ohm)</th>
+                        <th class="p-2 border border-slate-300">V วัดได้ (V1, V2, V3)</th>
+                        <th class="p-2 border border-slate-300">I วัดได้ (I1, I2, I3)</th>
+                    </tr>
+                </thead>
+                <tbody id="pdf-experiment-table-body">
+                    <tr>
+                        <td colspan="6" class="p-4 text-center text-slate-400">ยังไม่มีข้อมูลการบันทึกผลการทดลอง</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Section 4: Conclusion -->
+        <div class="space-y-2">
+            <h2 class="text-sm sm:text-base font-bold text-indigo-900 border-l-4 border-indigo-600 pl-2">4. สรุปผลการทดลอง</h2>
+            <div class="p-4 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-700 min-h-[60px]" id="pdf-rep-conclusion">
+                ยังไม่ได้บันทึกข้อสรุปผลการทดลอง
+            </div>
+        </div>
+    </div>
+
+    <!-- Minimal Custom Notification Box instead of alert() -->
+    <div id="custom-toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg text-xs sm:text-sm flex items-center space-x-2">
+        <i class="fa-solid fa-circle-info text-yellow-400 text-base"></i>
+        <span id="toast-message">ข้อความแจ้งเตือน</span>
+    </div>
 
     <script>
-        // Color database
-        const COLORS = [
-          { name: 'ดำ', color: '#000000', value: 0, multiplier: 1, tolerance: null, text: 'white' },
-          { name: 'น้ำตาล', color: '#8B4513', value: 1, multiplier: 10, tolerance: 1, text: 'white' },
-          { name: 'แดง', color: '#FF0000', value: 2, multiplier: 100, tolerance: 2, text: 'white' },
-          { name: 'ส้ม', color: '#FF4500', value: 3, multiplier: 1000, tolerance: null, text: 'white' },
-          { name: 'เหลือง', color: '#FFFF00', value: 4, multiplier: 10000, tolerance: null, text: 'black' },
-          { name: 'เขียว', color: '#008000', value: 5, multiplier: 100000, tolerance: 0.5, text: 'white' },
-          { name: 'น้ำเงิน', color: '#0000FF', value: 6, multiplier: 1000000, tolerance: 0.25, text: 'white' },
-          { name: 'ม่วง', color: '#800080', value: 7, multiplier: 10000000, tolerance: 0.1, text: 'white' },
-          { name: 'เทา', color: '#808080', value: 8, multiplier: null, tolerance: 0.05, text: 'white' },
-          { name: 'ขาว', color: '#FFFFFF', value: 9, multiplier: null, tolerance: null, text: 'black' },
-          { name: 'ทอง', color: '#FFD700', value: null, multiplier: 0.1, tolerance: 5, text: 'black' },
-          { name: 'เงิน', color: '#C0C0C0', value: null, multiplier: 0.01, tolerance: 10, text: 'black' },
-        ];
+        let experimentLogs = [];
+        let circuitChartInstance = null;
 
-        // Initialize Lucide icons
-        document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-            populateSelects();
-            populateColorTable();
-            updateCalculator();
-            updateLab();
-        });
+        function showToast(message) {
+            const toast = document.getElementById('custom-toast');
+            document.getElementById('toast-message').innerText = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
 
-        // Tab switching logic
         function switchTab(tabId) {
-            ['calculator', 'lab', 'content'].forEach(t => {
-                document.getElementById('tab-' + t).classList.add('hidden');
-                const btn = document.getElementById('nav-' + t);
-                btn.className = "flex items-center gap-3 px-6 py-3.5 rounded-xl text-base md:text-lg font-bold transition-all text-slate-600 hover:bg-slate-50";
+            const tabs = ['simulator', 'calculator', 'experiment', 'theory'];
+            tabs.forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`btn-${t}`).classList.remove('tab-active', 'border-indigo-600', 'text-indigo-600');
+                document.getElementById(`btn-${t}`).classList.add('border-transparent', 'text-slate-500');
             });
-            document.getElementById('tab-' + tabId).classList.remove('hidden');
-            const activeBtn = document.getElementById('nav-' + tabId);
-            const activeColors = {
-                calculator: 'bg-blue-600 text-white shadow-lg',
-                lab: 'bg-indigo-600 text-white shadow-lg',
-                content: 'bg-emerald-600 text-white shadow-lg'
-            };
-            activeBtn.className = `flex items-center gap-3 px-6 py-3.5 rounded-xl text-base md:text-lg font-bold transition-all ${activeColors[tabId]}`;
-            
-            // Hide color reference sidebar if lab tab is active
-            const sidebarRef = document.getElementById('sidebar-color-ref');
-            if (tabId === 'lab') {
-                sidebarRef.classList.add('hidden');
-            } else {
-                sidebarRef.classList.remove('hidden');
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.getElementById(`btn-${tabId}`).classList.add('tab-active', 'border-indigo-600', 'text-indigo-600');
+            document.getElementById(`btn-${tabId}`).classList.remove('border-transparent', 'text-slate-500');
+
+            if(tabId === 'calculator') {
+                updateCalculator();
             }
         }
 
-        // Populate select elements
-        function populateSelects() {
-            const s1 = document.getElementById('select-band1');
-            const s2 = document.getElementById('select-band2');
-            const s3 = document.getElementById('select-band3');
-            const s4 = document.getElementById('select-band4');
-
-            COLORS.forEach((c, idx) => {
-                if (c.value !== null) {
-                    s1.options.add(new Option(c.name, idx));
-                    s2.options.add(new Option(c.name, idx));
-                }
-                if (c.multiplier !== null) {
-                    s3.options.add(new Option(c.name, idx));
-                }
-                if (c.tolerance !== null) {
-                    s4.options.add(new Option(c.name, idx));
-                }
-            });
-
-            // Default selections
-            s1.value = 1; // น้ำตาล (1)
-            s2.value = 0; // ดำ (0)
-            s3.value = 2; // แดง (x100 -> 1k)
-            s4.value = 10; // ทอง (±5%)
-        }
-
-        // Populate color reference sidebar with larger text and blocks
-        function populateColorTable() {
-            const container = document.getElementById('color-table-list');
-            let html = '';
-            COLORS.slice(0, 10).forEach(c => {
-                const exp = c.multiplier !== null ? Math.log10(c.multiplier) : 0;
-                html += `
-                    <div class="flex items-center justify-between text-sm md:text-base p-2.5 rounded-2xl hover:bg-slate-50 transition-colors group">
-                      <div class="flex items-center gap-3">
-                        <div class="w-12 h-6 rounded-lg border border-slate-200 shadow-sm transition-transform group-hover:scale-110" style="background-color: ${c.color}"></div>
-                        <span class="font-bold text-slate-700">${c.name}</span>
-                      </div>
-                      <div class="flex gap-6 font-mono text-slate-500 font-medium"><span>${c.value !== null ? c.value : '-'}</span><span class="w-12 text-right">x10<sup>${exp}</sup></span></div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        // Calculator update logic
         function updateCalculator() {
-            const b1Idx = parseInt(document.getElementById('select-band1').value);
-            const b2Idx = parseInt(document.getElementById('select-band2').value);
-            const b3Idx = parseInt(document.getElementById('select-band3').value);
-            const b4Idx = parseInt(document.getElementById('select-band4').value);
+            const type = document.getElementById('calc-type').value;
+            const V = parseFloat(document.getElementById('calc-voltage').value) || 0;
+            const r1 = parseFloat(document.getElementById('calc-r1').value) || 1;
+            const r2 = parseFloat(document.getElementById('calc-r2').value) || 1;
+            const r3 = parseFloat(document.getElementById('calc-r3').value) || 1;
 
-            // Update preview colors
-            document.getElementById('band1-preview').style.backgroundColor = COLORS[b1Idx].color;
-            document.getElementById('band2-preview').style.backgroundColor = COLORS[b2Idx].color;
-            document.getElementById('band3-preview').style.backgroundColor = COLORS[b3Idx].color;
-            document.getElementById('band4-preview').style.backgroundColor = COLORS[b4Idx].color;
+            document.getElementById('r1-val-label').innerText = r1 + ' ohm';
+            document.getElementById('r2-val-label').innerText = r2 + ' ohm';
+            document.getElementById('r3-val-label').innerText = r3 + ' ohm';
 
-            const val1 = COLORS[b1Idx].value;
-            const val2 = COLORS[b2Idx].value;
-            const mult = COLORS[b3Idx].multiplier;
-            const tol = COLORS[b4Idx].tolerance;
+            // Get student's manual inputs for V and I from PhET
+            const v1 = parseFloat(document.getElementById('phet-input-v1').value) || 0;
+            const i1 = parseFloat(document.getElementById('phet-input-i1').value) || 0;
+            const v2 = parseFloat(document.getElementById('phet-input-v2').value) || 0;
+            const i2 = parseFloat(document.getElementById('phet-input-i2').value) || 0;
+            const v3 = parseFloat(document.getElementById('phet-input-v3').value) || 0;
+            const i3 = parseFloat(document.getElementById('phet-input-i3').value) || 0;
 
-            const resistance = (val1 * 10 + val2) * mult;
+            let Rtotal = 0;
+            if (type === 'series') {
+                Rtotal = r1 + r2 + r3;
+            } else if (type === 'parallel') {
+                const invR = (1/r1) + (1/r2) + (1/r3);
+                Rtotal = invR > 0 ? 1 / invR : 0;
+            } else {
+                const r23 = (r2 * r3) / (r2 + r3);
+                Rtotal = r1 + r23;
+            }
+
+            let Itotal = type === 'series' ? i1 : (i1 + i2 + i3);
+
+            document.getElementById('res-rtotal').innerText = Rtotal.toFixed(2) + ' ohm';
+            document.getElementById('res-itotal').innerText = Itotal.toFixed(3) + ' A';
+
+            const tbody = document.getElementById('breakdown-table-body');
+            tbody.innerHTML = `
+                <tr>
+                    <td class="p-3 font-semibold text-slate-800">R1</td>
+                    <td class="p-3">${r1} ohm</td>
+                    <td class="p-3">${v1.toFixed(2)} V</td>
+                    <td class="p-3">${i1.toFixed(3)} A</td>
+                </tr>
+                <tr>
+                    <td class="p-3 font-semibold text-slate-800">R2</td>
+                    <td class="p-3">${r2} ohm</td>
+                    <td class="p-3">${v2.toFixed(2)} V</td>
+                    <td class="p-3">${i2.toFixed(3)} A</td>
+                </tr>
+                <tr>
+                    <td class="p-3 font-semibold text-slate-800">R3</td>
+                    <td class="p-3">${r3} ohm</td>
+                    <td class="p-3">${v3.toFixed(2)} V</td>
+                    <td class="p-3">${i3.toFixed(3)} A</td>
+                </tr>
+            `;
+
+            updateChart([v1, v2, v3]);
+        }
+
+        function updateChart(voltages) {
+            const ctx = document.getElementById('circuitChart').getContext('2d');
+            if (circuitChartInstance) {
+                circuitChartInstance.destroy();
+            }
+            circuitChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['R1', 'R2', 'R3'],
+                    datasets: [{
+                        label: 'แรงดันไฟฟ้าตกคร่อมที่วัดได้ (V)',
+                        data: voltages,
+                        backgroundColor: ['#6366f1', '#3b82f6', '#0ea5e9'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function logToExperiment() {
+            const type = document.getElementById('calc-type').value;
+            const V = document.getElementById('calc-voltage').value;
+            const r1 = document.getElementById('calc-r1').value;
+            const r2 = document.getElementById('calc-r2').value;
+            const r3 = document.getElementById('calc-r3').value;
             
-            document.getElementById('resistance-output').innerText = formatValue(resistance);
-            document.getElementById('tolerance-output').innerText = `ความคลาดเคลื่อน: ±${tol}%`;
+            const v1 = document.getElementById('phet-input-v1').value;
+            const i1 = document.getElementById('phet-input-i1').value;
+            const v2 = document.getElementById('phet-input-v2').value;
+            const i2 = document.getElementById('phet-input-i2').value;
+            const v3 = document.getElementById('phet-input-v3').value;
+            const i3 = document.getElementById('phet-input-i3').value;
+
+            if(!v1 || !i1 || !v2 || !i2 || !v3 || !i3) {
+                showToast('กรุณากรอกค่า V และ I ของตัวต้านทานทุกตัวให้ครบถ้วน');
+                return;
+            }
+
+            experimentLogs.push({
+                id: experimentLogs.length + 1,
+                type: type === 'series' ? 'อนุกรม' : type === 'parallel' ? 'ขนาน' : 'ผสม',
+                voltage: V + ' V',
+                resistors: `${r1}, ${r2}, ${r3} ohm`,
+                phetV: `V1:${v1}, V2:${v2}, V3:${v3} V`,
+                phetI: `I1:${i1}, I2:${i2}, I3:${i3} A`,
+                rtotal: document.getElementById('res-rtotal').innerText
+            });
+
+            renderExperimentTable();
+            showToast('บันทึกผล PhET ลงตารางทดลองเรียบร้อยแล้ว');
         }
 
-        // Number formatter
-        function formatValue(val) {
-            if (!val || val === Infinity) return "0 Ω";
-            if (val >= 1000000) return (val / 1000000).toFixed(2) + ' MΩ';
-            if (val >= 1000) return (val / 1000).toFixed(2) + ' kΩ';
-            return val.toFixed(1) + ' Ω';
+        function renderExperimentTable() {
+            const tbody = document.getElementById('experiment-table-body');
+            if (experimentLogs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">ยังไม่มีข้อมูลการทดลอง กรุณาต่อวงจรใน PhET แล้วกรอกค่า V และ I ในหน้าเตรียมการทดลอง</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = experimentLogs.map(log => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-3 font-medium">#${log.id}</td>
+                    <td class="p-3"><span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-medium">${log.type}</span></td>
+                    <td class="p-3">${log.voltage}</td>
+                    <td class="p-3 font-mono text-xs">${log.resistors}</td>
+                    <td class="p-3 font-semibold text-indigo-600 text-xs">${log.phetV}</td>
+                    <td class="p-3 font-semibold text-emerald-600 text-xs">${log.phetI}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="deleteLog(${log.id})" class="text-red-500 hover:text-red-700 p-1"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
         }
 
-        // Lab calculations
-        function updateLab() {
-            const r1 = parseInt(document.getElementById('slider-r1').value);
-            const r2 = parseInt(document.getElementById('slider-r2').value);
-
-            document.getElementById('val-r1').innerText = r1 + ' Ω';
-            document.getElementById('val-r2').innerText = r2 + ' Ω';
-
-            const seriesRT = r1 + r2;
-            const parallelRT = (r1 * r2) / (r1 + r2);
-
-            document.getElementById('series-rt-output').innerText = formatValue(seriesRT);
-            document.getElementById('parallel-rt-output').innerText = formatValue(parallelRT);
+        function deleteLog(id) {
+            experimentLogs = experimentLogs.filter(l => l.id !== id);
+            renderExperimentTable();
         }
+
+        function clearExperimentLogs() {
+            experimentLogs = [];
+            renderExperimentTable();
+        }
+
+        function saveConclusion() {
+            const text = document.getElementById('experiment-conclusion').value;
+            if(!text.trim()) {
+                showToast('กรุณากรอกข้อสรุปผลการทดลองก่อนบันทึก');
+                return;
+            }
+            document.getElementById('pdf-rep-conclusion').innerText = text;
+            showToast('บันทึกสรุปผลการทดลองเรียบร้อยแล้ว');
+        }
+
+        function exportPDFReport() {
+            // Prepare PDF Template data
+            const now = new Date();
+            document.getElementById('pdf-date-str').innerText = `วันที่พิมพ์: ${now.toLocaleDateString('th-TH')} ${now.toLocaleTimeString('th-TH')}`;
+            
+            const currentType = document.getElementById('calc-type').selectedOptions[0].text;
+            const currentVoltage = document.getElementById('calc-voltage').value + ' V';
+            const currentRTotal = document.getElementById('res-rtotal').innerText;
+
+            document.getElementById('pdf-rep-type').innerText = currentType;
+            document.getElementById('pdf-rep-voltage').innerText = currentVoltage;
+            document.getElementById('pdf-rep-rtotal').innerText = currentRTotal;
+
+            const pdfTbody = document.getElementById('pdf-experiment-table-body');
+            if (experimentLogs.length === 0) {
+                pdfTbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">ยังไม่มีข้อมูลการบันทึกผลการทดลอง</td></tr>`;
+            } else {
+                pdfTbody.innerHTML = experimentLogs.map(l => `
+                    <tr>
+                        <td class="p-2 border border-slate-300">#${l.id}</td>
+                        <td class="p-2 border border-slate-300">${l.type}</td>
+                        <td class="p-2 border border-slate-300">${l.voltage}</td>
+                        <td class="p-2 border border-slate-300">${l.resistors}</td>
+                        <td class="p-2 border border-slate-300">${l.phetV}</td>
+                        <td class="p-2 border border-slate-300">${l.phetI}</td>
+                    </tr>
+                `).join('');
+            }
+
+            const element = document.getElementById('pdf-report-template');
+            element.classList.remove('hidden');
+
+            const opt = {
+                margin:       10,
+                filename:     'circuit_experiment_report.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().from(element).set(opt).save().then(() => {
+                element.classList.add('hidden');
+            });
+        }
+
+        window.onload = function() {
+            updateCalculator();
+        };
     </script>
 </body>
 </html>
